@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { createStream, getCurrentUser } from '../api/api.js';
+import {
+  createStream,
+  getCurrentUser,
+  getMyStreamHistory,
+} from '../api/api.js';
 
 const RTMP_URL = 'rtmp://localhost:1935/live';
 
@@ -17,6 +21,8 @@ function Dashboard() {
   const [streamMessage, setStreamMessage] = useState('');
   const [streamError, setStreamError] = useState('');
   const [copyMessage, setCopyMessage] = useState('');
+  const [streamHistory, setStreamHistory] = useState([]);
+  const [historyError, setHistoryError] = useState('');
   const token = localStorage.getItem('streamforgeToken');
 
   useEffect(() => {
@@ -38,6 +44,24 @@ function Dashboard() {
 
     loadCurrentUser();
   }, [token]);
+
+  useEffect(() => {
+    async function loadStreamHistory() {
+      if (!token) {
+        return;
+      }
+
+      try {
+        const data = await getMyStreamHistory();
+        setStreamHistory(data.sessions);
+        setHistoryError('');
+      } catch (error) {
+        setHistoryError(error.message);
+      }
+    }
+
+    loadStreamHistory();
+  }, [token, streamMessage]);
 
   function handleStreamFormChange(event) {
     setStreamForm({
@@ -71,6 +95,29 @@ function Dashboard() {
     } catch (error) {
       setCopyMessage('Could not copy stream key');
     }
+  }
+
+  function formatDate(value) {
+    if (!value) {
+      return 'Not ended yet';
+    }
+
+    return new Date(value).toLocaleString();
+  }
+
+  function formatDuration(seconds) {
+    if (!seconds) {
+      return '0 seconds';
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (minutes === 0) {
+      return `${remainingSeconds} seconds`;
+    }
+
+    return `${minutes} min ${remainingSeconds} sec`;
   }
 
   if (!token) {
@@ -190,6 +237,35 @@ function Dashboard() {
             <p>
               <strong>Status:</strong> Offline
             </p>
+          </div>
+        )}
+      </div>
+
+      <div className="stream-history-section">
+        <h2>Stream History</h2>
+        {historyError && <p className="error-text">{historyError}</p>}
+
+        {streamHistory.length === 0 ? (
+          <p>No stream sessions yet.</p>
+        ) : (
+          <div className="history-list">
+            {streamHistory.map((session) => (
+              <article className="history-item" key={session._id}>
+                <div>
+                  <span className={`stream-status ${session.status === 'live' ? 'live' : ''}`}>
+                    {session.status === 'live' ? 'LIVE' : 'Ended'}
+                  </span>
+                  <h3>{session.title}</h3>
+                  <p>{session.category}</p>
+                </div>
+
+                <div className="stream-card-meta">
+                  <span>Started: {formatDate(session.startedAt)}</span>
+                  <span>Ended: {formatDate(session.endedAt)}</span>
+                  <span>Duration: {formatDuration(session.durationSeconds)}</span>
+                </div>
+              </article>
+            ))}
           </div>
         )}
       </div>

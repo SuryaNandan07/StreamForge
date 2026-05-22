@@ -63,3 +63,13 @@ export async function createStream(streamData) {
 export async function getStreams() {
   return request('/streams');
 }
+
+export async function getMyStreamHistory() {
+  const token = localStorage.getItem('streamforgeToken');
+
+  return request('/streams/history/me', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

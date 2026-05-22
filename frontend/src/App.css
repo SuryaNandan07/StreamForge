@@ -232,6 +232,7 @@ h1 {
 }
 
 .stream-form-section h2,
+.stream-history-section h2,
 .stream-list-section h2 {
   margin: 0;
   font-size: 28px;
@@ -247,6 +248,35 @@ h1 {
 
 .created-stream-box h3 {
   margin-top: 0;
+}
+
+.stream-history-section {
+  margin-top: 36px;
+  padding-top: 32px;
+  border-top: 1px solid #1e293b;
+}
+
+.history-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.history-item {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  background: #111827;
+}
+
+.history-item h3 {
+  margin: 10px 0 4px;
+}
+
+.history-item p {
+  margin: 0;
 }
 
 .stream-list-section {

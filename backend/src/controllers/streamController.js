@@ -1,4 +1,5 @@
 const Stream = require('../models/Stream');
+const StreamSession = require('../models/StreamSession');
 const User = require('../models/User');
 
 async function createStream(req, res) {
@@ -127,6 +128,44 @@ async function updateStreamStatus(req, res) {
       .sort({ createdAt: -1 })
       .populate('creator', 'username');
 
+    if (isLive) {
+      const activeSession = await StreamSession.findOne({
+        streamKey,
+        status: 'live',
+      });
+
+      if (!activeSession) {
+        await StreamSession.create({
+          creator: stream.creator._id,
+          streamKey: stream.streamKey,
+          title: stream.title,
+          category: stream.category,
+          description: stream.description,
+          startedAt: new Date(),
+          status: 'live',
+        });
+      }
+    } else {
+      const activeSession = await StreamSession.findOne({
+        streamKey,
+        status: 'live',
+      }).sort({ startedAt: -1 });
+
+      if (activeSession) {
+        const endedAt = new Date();
+        const durationSeconds = Math.max(
+          0,
+          Math.round((endedAt - activeSession.startedAt) / 1000)
+        );
+
+        activeSession.endedAt = endedAt;
+        activeSession.durationSeconds = durationSeconds;
+        activeSession.status = 'ended';
+
+        await activeSession.save();
+      }
+    }
+
     console.log('updated stream result:', stream);
 
     return res.json({
@@ -142,8 +181,26 @@ async function updateStreamStatus(req, res) {
   }
 }
 
+async function getMyStreamHistory(req, res) {
+  try {
+    const sessions = await StreamSession.find({ creator: req.user.userId })
+      .sort({ startedAt: -1 });
+
+    return res.json({
+      success: true,
+      sessions,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Could not load stream history',
+    });
+  }
+}
+
 module.exports = {
   createStream,
   getStreams,
+  getMyStreamHistory,
   updateStreamStatus,
 };
