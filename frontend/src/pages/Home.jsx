@@ -9,6 +9,17 @@ function Home() {
   const [streams, setStreams] = useState([]);
   const [isLoadingStreams, setIsLoadingStreams] = useState(true);
   const [streamsError, setStreamsError] = useState('');
+  const visibleStreams = [];
+  const seenCreators = new Set();
+
+  streams.forEach((stream) => {
+    const creatorId = stream.creator?._id || stream.creator?.username || stream.streamKey;
+
+    if (!seenCreators.has(creatorId)) {
+      seenCreators.add(creatorId);
+      visibleStreams.push(stream);
+    }
+  });
 
   useEffect(() => {
     async function loadBackendStatus() {
@@ -29,6 +40,7 @@ function Home() {
       try {
         const data = await getStreams();
         setStreams(data.streams);
+        setStreamsError('');
       } catch (error) {
         setStreamsError(error.message);
       } finally {
@@ -38,6 +50,11 @@ function Home() {
 
     loadBackendStatus();
     loadStreams();
+    const streamRefresh = setInterval(loadStreams, 5000);
+
+    return () => {
+      clearInterval(streamRefresh);
+    };
   }, []);
 
   return (
@@ -76,15 +93,17 @@ function Home() {
         {isLoadingStreams && <p>Loading streams...</p>}
         {streamsError && <p className="error-text">{streamsError}</p>}
 
-        {!isLoadingStreams && streams.length === 0 && (
+        {!isLoadingStreams && visibleStreams.length === 0 && (
           <p>No streams created yet. Create one from the Dashboard.</p>
         )}
 
         <div className="stream-card-grid">
-          {streams.map((stream) => (
+          {visibleStreams.map((stream) => (
             <article className="stream-card" key={stream._id}>
               <div>
-                <span className="stream-status">Offline</span>
+                <span className={`stream-status ${stream.isLive ? 'live' : ''}`}>
+                  {stream.isLive ? 'LIVE' : 'Offline'}
+                </span>
                 <h3>{stream.title}</h3>
                 <p>{stream.description || 'No description yet.'}</p>
               </div>

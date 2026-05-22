@@ -134,8 +134,8 @@ function Dashboard() {
       </div>
 
       <div className="stream-form-section">
-        <h2>Create Stream Metadata</h2>
-        <p>This creates the stream listing. Actual video streaming comes later.</p>
+        <h2>Create / Update Stream Info</h2>
+        <p>This saves your current channel listing. Actual video streaming uses your stream key.</p>
 
         <form className="auth-form" onSubmit={handleCreateStream}>
           <label>
@@ -170,8 +170,8 @@ function Dashboard() {
             />
           </label>
 
-          <button className="button primary-button" type="submit" disabled={isCreatingStream}>
-            {isCreatingStream ? 'Creating stream...' : 'Create Stream'}
+        <button className="button primary-button" type="submit" disabled={isCreatingStream}>
+            {isCreatingStream ? 'Saving stream info...' : 'Create / Update Stream Info'}
           </button>
         </form>
 
@@ -180,7 +180,7 @@ function Dashboard() {
 
         {createdStream && (
           <div className="created-stream-box">
-            <h3>Created Stream</h3>
+            <h3>Current Stream Info</h3>
             <p>
               <strong>Title:</strong> {createdStream.title}
             </p>
