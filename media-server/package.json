@@ -1,0 +1,13 @@
+{
+  "name": "streamforge-media-server",
+  "version": "1.0.0",
+  "description": "Local RTMP and HLS media server for StreamForge",
+  "main": "mediaServer.js",
+  "scripts": {
+    "dev": "node mediaServer.js",
+    "start": "node mediaServer.js"
+  },
+  "dependencies": {
+    "node-media-server": "^4.2.4"
+  }
+}

@@ -19,6 +19,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/watch" element={<Watch />} />
+          <Route path="/watch/:streamKey" element={<Watch />} />
         </Routes>
       </main>
     </div>

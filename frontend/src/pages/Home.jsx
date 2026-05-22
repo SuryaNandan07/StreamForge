@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { checkBackendHealth } from '../api/api.js';
+import { checkBackendHealth, getStreams } from '../api/api.js';
 
 function Home() {
   const [isCheckingBackend, setIsCheckingBackend] = useState(true);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [backendError, setBackendError] = useState('');
+  const [streams, setStreams] = useState([]);
+  const [isLoadingStreams, setIsLoadingStreams] = useState(true);
+  const [streamsError, setStreamsError] = useState('');
 
   useEffect(() => {
     async function loadBackendStatus() {
@@ -22,37 +25,83 @@ function Home() {
       }
     }
 
+    async function loadStreams() {
+      try {
+        const data = await getStreams();
+        setStreams(data.streams);
+      } catch (error) {
+        setStreamsError(error.message);
+      } finally {
+        setIsLoadingStreams(false);
+      }
+    }
+
     loadBackendStatus();
+    loadStreams();
   }, []);
 
   return (
-    <section className="hero-section">
-      <p className="eyebrow">Welcome to</p>
-      <h1>StreamForge</h1>
-      <p className="subtitle">Mini live streaming platform</p>
+    <>
+      <section className="hero-section">
+        <p className="eyebrow">Welcome to</p>
+        <h1>StreamForge</h1>
+        <p className="subtitle">Mini live streaming platform</p>
 
-      <div className="backend-status">
-        {isCheckingBackend ? (
-          <p>Checking backend...</p>
-        ) : (
-          <p>Backend: {isBackendConnected ? 'Connected' : 'Not connected'}</p>
+        <div className="backend-status">
+          {isCheckingBackend ? (
+            <p>Checking backend...</p>
+          ) : (
+            <p>Backend: {isBackendConnected ? 'Connected' : 'Not connected'}</p>
+          )}
+
+          {backendError && <p className="error-text">{backendError}</p>}
+        </div>
+
+        <div className="button-row">
+          <Link className="button primary-button" to="/login">
+            Login
+          </Link>
+          <Link className="button secondary-button" to="/register">
+            Register
+          </Link>
+          <Link className="button secondary-button" to="/dashboard">
+            Dashboard
+          </Link>
+        </div>
+      </section>
+
+      <section className="stream-list-section">
+        <h2>Streams</h2>
+
+        {isLoadingStreams && <p>Loading streams...</p>}
+        {streamsError && <p className="error-text">{streamsError}</p>}
+
+        {!isLoadingStreams && streams.length === 0 && (
+          <p>No streams created yet. Create one from the Dashboard.</p>
         )}
 
-        {backendError && <p className="error-text">{backendError}</p>}
-      </div>
+        <div className="stream-card-grid">
+          {streams.map((stream) => (
+            <article className="stream-card" key={stream._id}>
+              <div>
+                <span className="stream-status">Offline</span>
+                <h3>{stream.title}</h3>
+                <p>{stream.description || 'No description yet.'}</p>
+              </div>
 
-      <div className="button-row">
-        <Link className="button primary-button" to="/login">
-          Login
-        </Link>
-        <Link className="button secondary-button" to="/register">
-          Register
-        </Link>
-        <Link className="button secondary-button" to="/dashboard">
-          Dashboard
-        </Link>
-      </div>
-    </section>
+              <div className="stream-card-meta">
+                <span>Category: {stream.category}</span>
+                <span>Creator: {stream.creator?.username || 'Unknown'}</span>
+              </div>
+
+              <Link className="button secondary-button" to={`/watch/${stream.streamKey}`}>
+                Watch
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
 
