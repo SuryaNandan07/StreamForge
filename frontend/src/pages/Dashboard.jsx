@@ -149,8 +149,11 @@ function Dashboard() {
 
   return (
     <section className="content-panel dashboard-panel">
-      <h1>Creator Dashboard</h1>
-      <p>Your basic stream setup details.</p>
+      <div className="dashboard-hero">
+        <p className="eyebrow">Creator control panel</p>
+        <h1>Creator Dashboard</h1>
+        <p>Your channel setup, stream key, current listing, and session history live here.</p>
+      </div>
 
       <div className="dashboard-grid">
         <div className="dashboard-item">
@@ -177,6 +180,23 @@ function Dashboard() {
             </button>
           </div>
           {copyMessage && <p className="success-text">{copyMessage}</p>}
+        </div>
+      </div>
+
+      <div className="obs-box">
+        <div>
+          <p className="eyebrow">OBS setup</p>
+          <h2>Go live from your encoder</h2>
+        </div>
+        <div className="obs-grid">
+          <div>
+            <span>Server</span>
+            <code>{RTMP_URL}</code>
+          </div>
+          <div>
+            <span>Stream Key</span>
+            <code>{user.streamKey}</code>
+          </div>
         </div>
       </div>
 
@@ -217,7 +237,7 @@ function Dashboard() {
             />
           </label>
 
-        <button className="button primary-button" type="submit" disabled={isCreatingStream}>
+          <button className="button primary-button" type="submit" disabled={isCreatingStream}>
             {isCreatingStream ? 'Saving stream info...' : 'Create / Update Stream Info'}
           </button>
         </form>

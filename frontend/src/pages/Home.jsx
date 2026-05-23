@@ -77,9 +77,9 @@ function Home() {
   return (
     <>
       <section className="hero-section">
-        <p className="eyebrow">Welcome to</p>
+        <p className="eyebrow">Live now, forged by creators</p>
         <h1>StreamForge</h1>
-        <p className="subtitle">Mini live streaming platform</p>
+        <p className="subtitle">Build, stream, and connect live</p>
 
         <div className="backend-status">
           {isCheckingBackend ? (
@@ -105,7 +105,10 @@ function Home() {
       </section>
 
       <section className="stream-list-section">
-        <h2>Streams</h2>
+        <div className="section-heading">
+          <p className="eyebrow">Browse channels</p>
+          <h2>Live Streams</h2>
+        </div>
 
         {isLoadingStreams && <p>Loading streams...</p>}
         {streamsError && <p className="error-text">{streamsError}</p>}
@@ -126,11 +129,11 @@ function Home() {
               </div>
 
               <div className="stream-card-meta">
-                <span>Category: {stream.category}</span>
+                <span className="category-pill">{stream.category}</span>
                 <span>Creator: {stream.creator?.username || 'Unknown'}</span>
               </div>
 
-              <Link className="button secondary-button" to={`/watch/${stream.streamKey}`}>
+              <Link className="button stream-cta" to={`/watch/${stream.streamKey}`}>
                 Watch
               </Link>
             </article>

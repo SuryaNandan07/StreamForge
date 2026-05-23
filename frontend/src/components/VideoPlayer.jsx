@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 
+const HLS_BASE_URL = import.meta.env.VITE_HLS_BASE_URL || 'http://localhost:8000';
+
 function VideoPlayer({ streamKey, liveStartedAt, onRetry }) {
   const videoRef = useRef(null);
   const [status, setStatus] = useState('loading');
@@ -8,7 +10,7 @@ function VideoPlayer({ streamKey, liveStartedAt, onRetry }) {
   const cacheKey = liveStartedAt
     ? new Date(liveStartedAt).getTime()
     : Date.now();
-  const hlsUrl = `http://localhost:8000/live/${streamKey}/index.m3u8?t=${cacheKey}`;
+  const hlsUrl = `${HLS_BASE_URL}/live/${streamKey}/index.m3u8?t=${cacheKey}`;
 
   useEffect(() => {
     const video = videoRef.current;

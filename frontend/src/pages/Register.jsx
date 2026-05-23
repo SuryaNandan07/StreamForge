@@ -36,51 +36,54 @@ function Register() {
   }
 
   return (
-    <section className="content-panel auth-panel">
-      <h1>Register</h1>
-      <p>Create your StreamForge account.</p>
+    <section className="auth-shell">
+      <div className="content-panel auth-panel">
+        <p className="eyebrow">Start streaming</p>
+        <h1>Register</h1>
+        <p>Create your StreamForge account.</p>
 
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <label>
-          Username
-          <input
-            name="username"
-            type="text"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-        </label>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <label>
+            Username
+            <input
+              name="username"
+              type="text"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-        <label>
-          Email
-          <input
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </label>
+          <label>
+            Email
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-        <label>
-          Password
-          <input
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </label>
+          <label>
+            Password
+            <input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-        <button className="button primary-button" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Creating account...' : 'Register'}
-        </button>
-      </form>
+          <button className="button primary-button" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating account...' : 'Register'}
+          </button>
+        </form>
 
-      {message && <p className="success-text">{message}</p>}
-      {error && <p className="error-text">{error}</p>}
+        {message && <p className="success-text">{message}</p>}
+        {error && <p className="error-text">{error}</p>}
+      </div>
     </section>
   );
 }
