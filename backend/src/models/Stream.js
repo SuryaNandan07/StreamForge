@@ -29,6 +29,14 @@ const streamSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  liveStartedAt: {
+    type: Date,
+    default: null,
+  },
+  liveEndedAt: {
+    type: Date,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

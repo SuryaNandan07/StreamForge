@@ -93,6 +93,32 @@ async function getStreams(req, res) {
   }
 }
 
+async function getStreamByKey(req, res) {
+  try {
+    const { streamKey } = req.params;
+    const stream = await Stream.findOne({ streamKey })
+      .sort({ createdAt: -1 })
+      .populate('creator', 'username');
+
+    if (!stream) {
+      return res.status(404).json({
+        success: false,
+        message: 'Stream not found',
+      });
+    }
+
+    return res.json({
+      success: true,
+      stream,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Could not load stream',
+    });
+  }
+}
+
 async function updateStreamStatus(req, res) {
   try {
     const { streamKey } = req.params;
@@ -122,7 +148,18 @@ async function updateStreamStatus(req, res) {
 
     console.log('stream found/not found: found');
 
-    await Stream.updateMany({ streamKey }, { isLive });
+    const statusUpdate = isLive
+      ? {
+          isLive: true,
+          liveStartedAt: new Date(),
+          liveEndedAt: null,
+        }
+      : {
+          isLive: false,
+          liveEndedAt: new Date(),
+        };
+
+    await Stream.updateMany({ streamKey }, statusUpdate);
 
     const stream = await Stream.findOne({ streamKey })
       .sort({ createdAt: -1 })
@@ -200,6 +237,7 @@ async function getMyStreamHistory(req, res) {
 
 module.exports = {
   createStream,
+  getStreamByKey,
   getStreams,
   getMyStreamHistory,
   updateStreamStatus,

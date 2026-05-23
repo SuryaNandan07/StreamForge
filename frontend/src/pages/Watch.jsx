@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import LiveChat from '../components/LiveChat.jsx';
 import VideoPlayer from '../components/VideoPlayer.jsx';
-import { getStreams } from '../api/api.js';
+import { getStreamByKey } from '../api/api.js';
+import { formatDuration } from '../utils/formatDuration.js';
+
+const SOCKET_URL = 'http://localhost:5000';
 
 function Watch() {
   const { streamKey } = useParams();
   const [showPlayer, setShowPlayer] = useState(false);
   const [stream, setStream] = useState(null);
   const [statusError, setStatusError] = useState('');
+  const [socket, setSocket] = useState(null);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     async function loadStreamStatus() {
@@ -17,10 +24,8 @@ function Watch() {
       }
 
       try {
-        const data = await getStreams();
-        const currentStream = data.streams.find((item) => item.streamKey === streamKey);
-
-        setStream(currentStream || null);
+        const data = await getStreamByKey(streamKey);
+        setStream(data.stream);
         setStatusError('');
       } catch (error) {
         setStatusError('Could not load stream status.');
@@ -35,6 +40,49 @@ function Watch() {
     };
   }, [streamKey]);
 
+  useEffect(() => {
+    if (!stream?.isLive || !stream.liveStartedAt) {
+      setElapsedSeconds(0);
+      return;
+    }
+
+    function updateElapsedTime() {
+      const startedAt = new Date(stream.liveStartedAt).getTime();
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+
+      setElapsedSeconds(elapsed);
+    }
+
+    updateElapsedTime();
+    const timer = setInterval(updateElapsedTime, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [stream?.isLive, stream?.liveStartedAt]);
+
+  useEffect(() => {
+    if (!streamKey) {
+      return;
+    }
+
+    const watchSocket = io(SOCKET_URL);
+
+    watchSocket.emit('joinStream', streamKey);
+    watchSocket.on('viewer_count', (data) => {
+      if (data.streamKey === streamKey) {
+        setViewerCount(data.count);
+      }
+    });
+
+    setSocket(watchSocket);
+
+    return () => {
+      watchSocket.disconnect();
+      setSocket(null);
+    };
+  }, [streamKey]);
+
   function handleRetry() {
     setShowPlayer(false);
   }
@@ -45,9 +93,12 @@ function Watch() {
         <h1>Watch</h1>
         {streamKey && <p>Stream key: {streamKey}</p>}
         {stream && (
-          <span className={`stream-status ${stream.isLive ? 'live' : ''}`}>
-            {stream.isLive ? 'LIVE' : 'Offline'}
-          </span>
+          <div className="watch-meta-row">
+            <span className={`stream-status ${stream.isLive ? 'live' : ''}`}>
+              {stream.isLive ? `LIVE • ${formatDuration(elapsedSeconds)}` : 'Offline'}
+            </span>
+            <span className="viewer-count">{viewerCount} viewers</span>
+          </div>
         )}
         {statusError && <p className="error-text">{statusError}</p>}
 
@@ -65,7 +116,11 @@ function Watch() {
             <p>Click play to load stream</p>
           </div>
         ) : streamKey ? (
-          <VideoPlayer streamKey={streamKey} onRetry={handleRetry} />
+          <VideoPlayer
+            streamKey={streamKey}
+            liveStartedAt={stream?.liveStartedAt}
+            onRetry={handleRetry}
+          />
         ) : (
           <div className="video-placeholder">
             <p>Select a stream to watch video.</p>
@@ -74,7 +129,7 @@ function Watch() {
       </div>
 
       {streamKey ? (
-        <LiveChat streamKey={streamKey} />
+        <LiveChat streamKey={streamKey} socket={socket} />
       ) : (
         <section className="content-panel">
           <p>Select a stream from Home to open live chat.</p>

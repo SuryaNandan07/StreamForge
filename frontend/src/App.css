@@ -335,6 +335,19 @@ h1 {
   color: #ffffff;
 }
 
+.watch-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.viewer-count {
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .watch-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;

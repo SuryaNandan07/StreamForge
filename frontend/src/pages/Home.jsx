@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { checkBackendHealth, getStreams } from '../api/api.js';
+import { formatDuration } from '../utils/formatDuration.js';
 
 function Home() {
   const [isCheckingBackend, setIsCheckingBackend] = useState(true);
@@ -9,6 +10,7 @@ function Home() {
   const [streams, setStreams] = useState([]);
   const [isLoadingStreams, setIsLoadingStreams] = useState(true);
   const [streamsError, setStreamsError] = useState('');
+  const [now, setNow] = useState(Date.now());
   const visibleStreams = [];
   const seenCreators = new Set();
 
@@ -51,11 +53,26 @@ function Home() {
     loadBackendStatus();
     loadStreams();
     const streamRefresh = setInterval(loadStreams, 5000);
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
 
     return () => {
       clearInterval(streamRefresh);
+      clearInterval(timer);
     };
   }, []);
+
+  function getLiveDuration(stream) {
+    if (!stream.isLive || !stream.liveStartedAt) {
+      return '';
+    }
+
+    const startedAt = new Date(stream.liveStartedAt).getTime();
+    const elapsed = Math.floor((now - startedAt) / 1000);
+
+    return formatDuration(elapsed);
+  }
 
   return (
     <>
@@ -102,7 +119,7 @@ function Home() {
             <article className="stream-card" key={stream._id}>
               <div>
                 <span className={`stream-status ${stream.isLive ? 'live' : ''}`}>
-                  {stream.isLive ? 'LIVE' : 'Offline'}
+                  {stream.isLive ? `LIVE • ${getLiveDuration(stream)}` : 'Offline'}
                 </span>
                 <h3>{stream.title}</h3>
                 <p>{stream.description || 'No description yet.'}</p>

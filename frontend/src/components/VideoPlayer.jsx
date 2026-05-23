@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 
-function VideoPlayer({ streamKey, onRetry }) {
+function VideoPlayer({ streamKey, liveStartedAt, onRetry }) {
   const videoRef = useRef(null);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
-  const hlsUrl = `http://localhost:8000/live/${streamKey}/index.m3u8`;
+  const cacheKey = liveStartedAt
+    ? new Date(liveStartedAt).getTime()
+    : Date.now();
+  const hlsUrl = `http://localhost:8000/live/${streamKey}/index.m3u8?t=${cacheKey}`;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -18,6 +21,8 @@ function VideoPlayer({ streamKey, onRetry }) {
     setError('');
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.removeAttribute('src');
+      video.load();
       video.src = hlsUrl;
       video.onloadedmetadata = () => {
         setStatus('ready');
@@ -55,7 +60,7 @@ function VideoPlayer({ streamKey, onRetry }) {
     return () => {
       hls.destroy();
     };
-  }, [hlsUrl, streamKey]);
+  }, [hlsUrl, streamKey, liveStartedAt]);
 
   return (
     <div className="video-player">

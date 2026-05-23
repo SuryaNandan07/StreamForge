@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import { getCurrentUser } from '../api/api.js';
-
-const SOCKET_URL = 'http://localhost:5000';
 
 function getSavedUser() {
   const savedUser = localStorage.getItem('streamforgeUser');
@@ -19,8 +16,7 @@ function getSavedUser() {
   }
 }
 
-function LiveChat({ streamKey }) {
-  const [socket, setSocket] = useState(null);
+function LiveChat({ streamKey, socket }) {
   const [user, setUser] = useState(getSavedUser());
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
@@ -55,23 +51,18 @@ function LiveChat({ streamKey }) {
   }, [token, user?.username]);
 
   useEffect(() => {
-    if (!streamKey || !token || !user?.username) {
+    if (!socket) {
       return;
     }
 
-    const chatSocket = io(SOCKET_URL);
-
-    chatSocket.emit('joinStream', streamKey);
-    chatSocket.on('receiveMessage', (newMessage) => {
+    socket.on('receiveMessage', (newMessage) => {
       setMessages((currentMessages) => [...currentMessages, newMessage]);
     });
 
-    setSocket(chatSocket);
-
     return () => {
-      chatSocket.disconnect();
+      socket.off('receiveMessage');
     };
-  }, [streamKey, token, user?.username]);
+  }, [socket]);
 
   function handleSubmit(event) {
     event.preventDefault();

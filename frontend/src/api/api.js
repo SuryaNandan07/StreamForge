@@ -64,6 +64,10 @@ export async function getStreams() {
   return request('/streams');
 }
 
+export async function getStreamByKey(streamKey) {
+  return request(`/streams/${streamKey}`);
+}
+
 export async function getMyStreamHistory() {
   const token = localStorage.getItem('streamforgeToken');
 

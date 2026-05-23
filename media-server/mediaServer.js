@@ -26,6 +26,13 @@ const config = {
   static: {
     router: '/',
     root: MEDIA_ROOT,
+    options: {
+      setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      },
+    },
   },
 };
 
@@ -43,6 +50,15 @@ function getStreamKeyFromSession(session) {
   const streamPathParts = session.streamPath.split('/').filter(Boolean);
 
   return streamPathParts[1] || session.streamName;
+}
+
+function prepareFreshHlsFolder(outputDir) {
+  console.log(`[HLS] Cleaning old HLS files: ${outputDir}`);
+  fs.rmSync(outputDir, { recursive: true, force: true });
+  console.log('[HLS] Old HLS files cleaned');
+
+  fs.mkdirSync(outputDir, { recursive: true });
+  console.log('[HLS] Fresh HLS folder created');
 }
 
 async function updateBackendStreamStatus(streamKey, isLive) {
@@ -95,8 +111,7 @@ function startHlsProcess(session) {
   const { outputDir, outputFile } = getHlsPaths(streamKey);
 
   updateBackendStreamStatus(streamKey, true);
-
-  fs.mkdirSync(outputDir, { recursive: true });
+  prepareFreshHlsFolder(outputDir);
 
   const ffmpegArgs = [
     '-i',
