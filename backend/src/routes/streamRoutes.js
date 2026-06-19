@@ -13,7 +13,7 @@ const router = express.Router();
 router.post('/create', authMiddleware, createStream);
 router.get('/', getStreams);
 router.get('/history/me', authMiddleware, getMyStreamHistory);
-router.get('/:streamKey', getStreamByKey);
 router.patch('/status/:streamKey', updateStreamStatus);
+router.get('/:streamKey', getStreamByKey);
 
 module.exports = router;

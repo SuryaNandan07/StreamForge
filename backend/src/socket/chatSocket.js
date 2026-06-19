@@ -10,6 +10,8 @@ function setupChatSocket(io) {
   }
 
   io.on('connection', (socket) => {
+    console.log('Socket connected');
+
     socket.on('joinStream', (streamKey) => {
       if (!streamKey || !streamKey.trim()) {
         return;

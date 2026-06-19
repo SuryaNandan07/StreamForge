@@ -96,22 +96,42 @@ async function getStreams(req, res) {
 async function getStreamByKey(req, res) {
   try {
     const { streamKey } = req.params;
+
+    console.log('Stream details route hit');
+    console.log('received streamKey:', streamKey);
+
     const stream = await Stream.findOne({ streamKey })
       .sort({ createdAt: -1 })
       .populate('creator', 'username');
 
     if (!stream) {
+      console.log('stream details found/not found: not found');
+
       return res.status(404).json({
         success: false,
-        message: 'Stream not found',
+        message: `Stream not found for streamKey: ${streamKey}`,
       });
     }
 
+    console.log('stream details found/not found: found');
+
     return res.json({
       success: true,
-      stream,
+      stream: {
+        title: stream.title,
+        category: stream.category,
+        description: stream.description,
+        creator: stream.creator,
+        streamKey: stream.streamKey,
+        isLive: stream.isLive,
+        createdAt: stream.createdAt,
+        liveStartedAt: stream.liveStartedAt,
+        liveEndedAt: stream.liveEndedAt,
+      },
     });
   } catch (error) {
+    console.log('stream details error:', error.message);
+
     return res.status(500).json({
       success: false,
       message: 'Could not load stream',

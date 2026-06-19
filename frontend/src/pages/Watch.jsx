@@ -8,6 +8,8 @@ import { formatDuration } from '../utils/formatDuration.js';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 
+console.log('StreamForge SOCKET_URL:', SOCKET_URL);
+
 function Watch() {
   const { streamKey } = useParams();
   const [showPlayer, setShowPlayer] = useState(false);
